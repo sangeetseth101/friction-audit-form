@@ -443,19 +443,13 @@
             margin-right: 4px;
         }
 
-        /* Cal.com section */
+        /* Cal.com section — hidden until step 3, zero height so it doesn't push content */
         .cal-section {
-            position: absolute;
-            left: -9999px;
-            opacity: 0;
-            pointer-events: none;
+            display: none;
         }
 
         .cal-section.active {
-            position: relative;
-            left: auto;
-            opacity: 1;
-            pointer-events: auto;
+            display: block;
             animation: fadeUp 0.4s ease both;
         }
 
@@ -484,13 +478,13 @@
         }
 
         .cal-embed-wrapper {
-            min-height: 700px;
+            min-height: 650px;
             background: var(--card-bg);
         }
 
         #my-cal-inline-frictionaudit {
             width: 100%;
-            min-height: 700px;
+            min-height: 650px;
             overflow: auto;
         }
 
@@ -1110,6 +1104,8 @@
             }
         }
 
+        let calInitialized = false;
+
         async function submitAndShowCal() {
             if (!validateStep(2)) return;
             saveStepData(2);
@@ -1141,6 +1137,12 @@
             document.getElementById('formCard').style.display = 'none';
             document.getElementById('calSection').classList.add('active');
 
+            // Lazy-init Cal.com only once
+            if (!calInitialized) {
+                calInitialized = true;
+                initCalEmbed();
+            }
+
             // Update progress to step 3
             currentStep = 3;
             document.querySelectorAll('.progress-step').forEach(s => {
@@ -1154,7 +1156,6 @@
 
             // Scroll to calendar
             document.getElementById('calSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-
         }
 
         // Remove error styling on input
@@ -1165,18 +1166,28 @@
         });
     </script>
 
-    <!-- Cal inline embed code begins -->
+    <!-- Cal inline embed code — lazy loaded when user reaches step 3 -->
     <script type="text/javascript">
         (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if (typeof namespace === "string") { cal.ns[namespace] = cal.ns[namespace] || api; p(cal.ns[namespace], ar); p(cal, ["initNamespace", namespace]); } else p(cal, ar); return; } p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
-        Cal("init", "frictionaudit", { origin: "https://app.cal.com" });
-        Cal.ns.frictionaudit("inline", {
-            elementOrSelector: "#my-cal-inline-frictionaudit",
-            config: { "layout": "column_view", "useSlotsViewOnSmallScreen": "true" },
-            calLink: "sangeet-seth-vcxo8u/frictionaudit",
-        });
-        Cal.ns.frictionaudit("ui", { "hideEventTypeDetails": false, "layout": "column_view" });
+
+        function initCalEmbed() {
+            Cal("init", "frictionaudit", { origin: "https://app.cal.com" });
+            Cal.ns.frictionaudit("inline", {
+                elementOrSelector: "#my-cal-inline-frictionaudit",
+                config: {
+                    "layout": "month_view",
+                    "theme": "dark",
+                    "useSlotsViewOnSmallScreen": "true"
+                },
+                calLink: "sangeet-seth-vcxo8u/frictionaudit",
+            });
+            Cal.ns.frictionaudit("ui", {
+                "hideEventTypeDetails": false,
+                "layout": "month_view",
+                "theme": "dark"
+            });
+        }
     </script>
-    <!-- Cal inline embed code ends -->
 
 </body>
 
